@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SkyFlow - Global Weather</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div id="app">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-inner">
+                <div class="logo">
+                    <span class="logo-icon">⛅</span>
+                    <span class="logo-text">SkyFlow</span>
+                </div>
+                <div class="header-actions">
+                    <button class="unit-toggle" id="unitToggle" aria-label="Toggle temperature units">
+                        <span class="unit-active" id="unitActive">°C</span>
+                        <span class="unit-divider">|</span>
+                        <span class="unit-inactive" id="unitInactive">°F</span>
+                    </button>
+                    <button class="refresh-btn" id="refreshBtn" aria-label="Refresh weather">
+                        <span class="refresh-icon">↻</span>
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Hero Section -->
+        <section class="hero">
+            <div class="hero-inner">
+                <h1 class="hero-title">Read the sky.<br>Understand the weather.</h1>
+                <p class="hero-sub">Real-time weather intelligence powered by WeatherAI</p>
+                
+                <div class="search-area">
+                    <div class="search-row">
+                        <input type="text" id="searchInput" placeholder="Search city or enter coordinates..." value="Nairobi">
+                        <button id="searchBtn">Search</button>
+                    </div>
+                    <div class="search-actions">
+                        <button id="locationBtn">📍 Use My Location</button>
+                        <div class="quick-cities">
+                            <span>Popular:</span>
+                            <button data-city="Nairobi" data-lat="-1.2921" data-lon="36.8219">Nairobi</button>
+                            <button data-city="London" data-lat="51.5074" data-lon="-0.1278">London</button>
+                            <button data-city="New York" data-lat="40.7128" data-lon="-74.0060">NYC</button>
+                            <button data-city="Tokyo" data-lat="35.6762" data-lon="139.6503">Tokyo</button>
+                            <button data-city="Sydney" data-lat="-33.8688" data-lon="151.2093">Sydney</button>
+                            <button data-city="Cape Town" data-lat="-33.9249" data-lon="18.4241">Cape Town</button>
+                            <button data-city="Paris" data-lat="48.8566" data-lon="2.3522">Paris</button>
+                            <button data-city="Dubai" data-lat="25.2048" data-lon="55.2708">Dubai</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Main Content -->
+        <main class="main">
+            <!-- Loading -->
+            <div id="loading" class="loading" style="display:none;">
+                <div class="loader"></div>
+                <p>Loading weather data...</p>
+            </div>
+
+            <!-- Error -->
+            <div id="error" class="error" style="display:none;">
+                <p id="errorMsg"></p>
+                <button id="retryBtn">Try Again</button>
+            </div>
+
+            <!-- Weather Content -->
+            <div id="weatherContent" style="display:none;">
+                <!-- Current Weather -->
+                <section class="current-weather">
+                    <div class="current-card">
+                        <div class="current-top">
+                            <div class="location-info">
+                                <h2 id="cityName">Nairobi</h2>
+                                <span id="countryInfo">Kenya, Africa</span>
+                                <p id="weatherDesc">Clear Sky</p>
+                            </div>
+                            <div class="temp-display">
+                                <span id="mainTemp">24°C</span>
+                                <span id="weatherEmoji">☀️</span>
+                            </div>
+                        </div>
+                        <div class="current-metrics">
+                            <div class="metric">
+                                <span class="metric-label">Temperature</span>
+                                <strong id="metricTemp">24°C</strong>
+                            </div>
+                            <div class="metric">
+                                <span class="metric-label">Humidity</span>
+                                <strong id="metricHumidity">65%</strong>
+                            </div>
+                            <div class="metric">
+                                <span class="metric-label">Wind</span>
+                                <strong id="metricWind">12 km/h</strong>
+                            </div>
+                            <div class="metric">
+                                <span class="metric-label">Pressure</span>
+                                <strong id="metricPressure">1012 hPa</strong>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- AI Insight -->
+                <section id="aiSection" style="display:none;">
+                    <div class="ai-card">
+                        <div class="ai-header">
+                            <span>🧠</span>
+                            <span>AI Weather Insight</span>
+                            <span class="ai-badge">WeatherAI</span>
+                        </div>
+                        <p id="aiText"></p>
+                    </div>
+                </section>
+
+                <!-- Hourly Forecast -->
+                <section id="hourlySection" style="display:none;">
+                    <h3 class="section-title">Hourly Forecast</h3>
+                    <div class="hourly-scroll" id="hourlyList">
+                        <!-- Rendered by JavaScript -->
+                    </div>
+                </section>
+
+                <!-- 7-Day Forecast -->
+                <section id="forecastSection" style="display:none;">
+                    <h3 class="section-title">7-Day Forecast</h3>
+                    <div class="forecast-grid" id="forecastList">
+                        <!-- Rendered by JavaScript -->
+                    </div>
+                </section>
+
+                <!-- Extra Details -->
+                <section id="extraSection" style="display:none;">
+                    <div class="extra-grid">
+                        <div><span>Sunrise</span><strong id="sunriseTime">--</strong></div>
+                        <div><span>Sunset</span><strong id="sunsetTime">--</strong></div>
+                        <div><span>Cloud Cover</span><strong id="cloudCover">--</strong></div>
+                        <div><span>Visibility</span><strong id="visibility">--</strong></div>
+                    </div>
+                </section>
+
+                <!-- Timestamp -->
+                <div class="timestamp" id="timestamp">Last updated: --</div>
+            </div>
+        </main>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <span>⛅ SkyFlow</span>
+            <span class="footer-divider">·</span>
+            <span>Powered by WeatherAI</span>
+            <span class="footer-divider">·</span>
+            <span>Global Weather Intelligence</span>
+        </footer>
+    </div>
+
+    <script src="js/app.js"></script>
+</body>
+</html>
