@@ -25,6 +25,9 @@ class WeatherAIService {
         throw this.handleApiError(response.status, data);
       }
 
+      // Log the actual response structure for debugging
+      console.log('📦 API Response Structure:', JSON.stringify(data, null, 2));
+
       return this.normalizeResponse(data);
     } catch (error) {
       if (error.message.includes('fetch')) {
@@ -34,89 +37,126 @@ class WeatherAIService {
     }
   }
 
-  async getCurrentWeather({ lat, lon, units = 'metric', lang = 'en' }) {
-    try {
-      const url = new URL(`${BASE_URL}/current`);
-      url.searchParams.append('lat', lat);
-      url.searchParams.append('lon', lon);
-      url.searchParams.append('units', units);
-      url.searchParams.append('lang', lang);
-
-      const response = await fetch(url.toString(), {
-        headers: {
-          'Authorization': `Bearer ${API_KEY}`,
-          'Content-Type': 'application/json'
-        }
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw this.handleApiError(response.status, data);
-      }
-
-      return this.normalizeCurrentWeather(data);
-    } catch (error) {
-      if (error.message.includes('fetch')) {
-        throw new Error('Network error: Unable to reach WeatherAI service');
-      }
-      throw error;
-    }
-  }
-
   normalizeResponse(data) {
-    return {
+    // Try multiple possible field names for location
+    const locationName = data.name || 
+                        data.city || 
+                        data.location?.name || 
+                        data.location?.city || 
+                        data.address?.city ||
+                        data.address?.town ||
+                        'Unknown Location';
+
+    // Try multiple possible field names for country
+    const country = data.country || 
+                   data.sys?.country || 
+                   data.location?.country ||
+                   data.address?.country ||
+                   '';
+
+    // Try multiple possible field names for temperature
+    const temp = data.main?.temp || 
+                data.temperature || 
+                data.current?.temp ||
+                data.current?.temperature ||
+                null;
+
+    // Try multiple possible field names for humidity
+    const humidity = data.main?.humidity || 
+                    data.humidity || 
+                    data.current?.humidity ||
+                    null;
+
+    // Try multiple possible field names for wind speed
+    const windSpeed = data.wind?.speed || 
+                     data.wind_speed || 
+                     data.current?.wind_speed ||
+                     data.current?.wind?.speed ||
+                     null;
+
+    // Try multiple possible field names for pressure
+    const pressure = data.main?.pressure || 
+                    data.pressure || 
+                    data.current?.pressure ||
+                    null;
+
+    // Try multiple possible field names for condition
+    const condition = data.weather?.[0]?.main || 
+                     data.condition || 
+                     data.current?.condition ||
+                     data.current?.weather?.[0]?.main ||
+                     'Unknown';
+
+    // Try multiple possible field names for description
+    const description = data.weather?.[0]?.description || 
+                       data.description || 
+                       data.current?.description ||
+                       data.current?.weather?.[0]?.description ||
+                       '';
+
+    // Try multiple possible field names for icon
+    const icon = data.weather?.[0]?.icon || 
+                data.icon || 
+                data.current?.icon ||
+                data.current?.weather?.[0]?.icon ||
+                '01d';
+
+    // Try multiple possible field names for sunrise/sunset
+    const sunrise = data.sys?.sunrise || 
+                   data.sunrise || 
+                   data.current?.sunrise ||
+                   null;
+
+    const sunset = data.sys?.sunset || 
+                  data.sunset || 
+                  data.current?.sunset ||
+                  null;
+
+    // Try multiple possible field names for cloud cover
+    const cloudCover = data.clouds?.all || 
+                      data.cloud_cover || 
+                      data.current?.clouds?.all ||
+                      data.current?.cloud_cover ||
+                      null;
+
+    // Try multiple possible field names for visibility
+    const visibility = data.visibility || 
+                      data.current?.visibility ||
+                      null;
+
+    const normalized = {
       location: {
-        name: data.name || data.city || 'Unknown Location',
-        country: data.country || data.sys?.country || '',
-        lat: data.coord?.lat || data.lat || null,
-        lon: data.coord?.lon || data.lon || null,
+        name: locationName,
+        country: country,
+        lat: data.coord?.lat || data.lat || lat || null,
+        lon: data.coord?.lon || data.lon || lon || null,
         timezone: data.timezone || null
       },
       current: {
-        temperature: data.main?.temp || data.temperature || null,
-        feelsLike: data.main?.feels_like || data.feels_like || null,
-        humidity: data.main?.humidity || data.humidity || null,
-        pressure: data.main?.pressure || data.pressure || null,
-        windSpeed: data.wind?.speed || data.wind_speed || null,
+        temperature: temp,
+        feelsLike: data.main?.feels_like || data.feels_like || data.current?.feels_like || null,
+        humidity: humidity,
+        pressure: pressure,
+        windSpeed: windSpeed,
         windDeg: data.wind?.deg || data.wind_deg || null,
-        cloudCover: data.clouds?.all || data.cloud_cover || null,
-        visibility: data.visibility || null,
-        condition: data.weather?.[0]?.main || data.condition || 'Unknown',
-        description: data.weather?.[0]?.description || data.description || '',
-        icon: data.weather?.[0]?.icon || data.icon || '01d',
-        uvi: data.uvi || null,
-        sunrise: data.sys?.sunrise || data.sunrise || null,
-        sunset: data.sys?.sunset || data.sunset || null
+        cloudCover: cloudCover,
+        visibility: visibility,
+        condition: condition,
+        description: description,
+        icon: icon,
+        uvi: data.uvi || data.current?.uvi || null,
+        sunrise: sunrise,
+        sunset: sunset
       },
-      aiInsight: data.ai_summary || data.ai || data.insight || null,
+      aiInsight: data.ai_summary || data.ai || data.insight || data.ai_insight || null,
       forecast: data.forecast || data.daily || [],
       hourly: data.hourly || [],
       units: data.units || 'metric',
       timestamp: data.dt || Date.now() / 1000
     };
-  }
 
-  normalizeCurrentWeather(data) {
-    return {
-      location: {
-        name: data.name || data.city || 'Unknown Location',
-        country: data.country || data.sys?.country || '',
-        lat: data.coord?.lat || data.lat || null,
-        lon: data.coord?.lon || data.lon || null
-      },
-      current: {
-        temperature: data.main?.temp || data.temperature || null,
-        feelsLike: data.main?.feels_like || data.feels_like || null,
-        humidity: data.main?.humidity || data.humidity || null,
-        pressure: data.main?.pressure || data.pressure || null,
-        windSpeed: data.wind?.speed || data.wind_speed || null,
-        condition: data.weather?.[0]?.main || data.condition || 'Unknown',
-        description: data.weather?.[0]?.description || data.description || '',
-        icon: data.weather?.[0]?.icon || data.icon || '01d'
-      },
-      timestamp: data.dt || Date.now() / 1000
-    };
+    console.log('✅ Normalized Data:', JSON.stringify(normalized, null, 2));
+    return normalized;
   }
 
   handleApiError(status, data) {
